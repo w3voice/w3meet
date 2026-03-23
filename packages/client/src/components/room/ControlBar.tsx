@@ -11,9 +11,10 @@ interface ControlBarProps {
   recording: boolean;
   onRecordToggle: () => void;
   recordingLoading: boolean;
+  onLeave: () => void;
 }
 
-export function ControlBar({ isHost, activePanel, onPanelToggle, recording, onRecordToggle, recordingLoading }: ControlBarProps) {
+export function ControlBar({ isHost, activePanel, onPanelToggle, recording, onRecordToggle, recordingLoading, onLeave }: ControlBarProps) {
   return (
     <div style={{
       display: "flex",
@@ -23,6 +24,7 @@ export function ControlBar({ isHost, activePanel, onPanelToggle, recording, onRe
       padding: "10px 16px",
       background: "var(--bg-surface)",
       borderTop: "1px solid var(--border-subtle)",
+      flexShrink: 0,
     }}>
       <TrackToggle source={Track.Source.Microphone} />
       <TrackToggle source={Track.Source.Camera} />
@@ -70,18 +72,20 @@ export function ControlBar({ isHost, activePanel, onPanelToggle, recording, onRe
 
       <div style={{ width: 1, height: 24, background: "var(--border-subtle)", margin: "0 10px" }} />
 
-      <DisconnectButton style={{
-        background: "var(--danger-dim)",
-        color: "var(--danger)",
-        border: "1px solid rgba(239, 68, 68, 0.25)",
-        padding: "8px 16px",
-        fontSize: 12,
-        fontFamily: "var(--font-mono)",
-        textTransform: "uppercase" as const,
-        letterSpacing: "0.06em",
-        borderRadius: "var(--radius)",
-        cursor: "pointer",
-      }}>
+      <DisconnectButton
+        onClick={onLeave}
+        style={{
+          background: "var(--danger-dim)",
+          color: "var(--danger)",
+          border: "1px solid rgba(239, 68, 68, 0.25)",
+          padding: "8px 16px",
+          fontSize: 12,
+          fontFamily: "var(--font-mono)",
+          textTransform: "uppercase" as const,
+          letterSpacing: "0.06em",
+          borderRadius: "var(--radius)",
+          cursor: "pointer",
+        }}>
         Leave
       </DisconnectButton>
     </div>

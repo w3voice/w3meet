@@ -1,7 +1,8 @@
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
-import { LiveKitRoom, RoomAudioRenderer } from "@livekit/components-react";
+import { LiveKitRoom, RoomAudioRenderer, useConnectionState } from "@livekit/components-react";
+import { ConnectionState, DisconnectReason, RoomOptions } from "livekit-client";
 import "@livekit/components-styles";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useRoom } from "../hooks/useRoom";
 import { useRecording } from "../hooks/useRecording";
 import { VideoGrid } from "../components/room/VideoGrid";
@@ -13,6 +14,42 @@ import { WhiteboardPanel } from "../components/whiteboard/WhiteboardPanel";
 import { DocsPanel } from "../components/docs/DocsPanel";
 import { CodePanel } from "../components/code/CodePanel";
 
+const roomOptions: RoomOptions = {
+  adaptiveStream: true,
+  dynacast: true,
+  reconnectPolicy: {
+    nextRetryDelayInMs: (context) => {
+      // Retry up to 10 times with increasing delay
+      if (context.retryCount > 10) return null;
+      return Math.min(1000 * Math.pow(1.5, context.retryCount), 15000);
+    },
+  },
+};
+
+function ConnectionStatus() {
+  const state = useConnectionState();
+  if (state === ConnectionState.Connected) return null;
+  return (
+    <div style={{
+      position: "absolute", top: 14, left: "50%", transform: "translateX(-50%)",
+      display: "flex", alignItems: "center", gap: 8,
+      padding: "6px 16px", borderRadius: 20, zIndex: 10,
+      background: "var(--accent-warm-dim)",
+      border: "1px solid rgba(249,115,22,0.3)",
+      fontFamily: "var(--font-mono)", fontSize: 11,
+      color: "var(--accent-warm)", textTransform: "uppercase",
+      letterSpacing: "0.06em",
+    }}>
+      <div style={{
+        width: 6, height: 6, borderRadius: "50%",
+        background: "var(--accent-warm)",
+        animation: "signal-breathe 1s ease-in-out infinite",
+      }} />
+      {state === ConnectionState.Reconnecting ? "Reconnecting..." : "Connecting..."}
+    </div>
+  );
+}
+
 export function RoomPage() {
   const { roomId } = useParams<{ roomId: string }>();
   const [searchParams] = useSearchParams();
@@ -21,17 +58,22 @@ export function RoomPage() {
   const hostKey = searchParams.get("host_key") || undefined;
   const { connection, error, loading } = useRoom(roomId!, name, hostKey);
   const [activePanel, setActivePanel] = useState<string | null>(null);
-  const [disconnected, setDisconnected] = useState(false);
+  const [userLeft, setUserLeft] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const intentionalLeave = useRef(false);
   const { recording, toggleRecording, loading: recLoading } = useRecording(roomId!, connection?.isHost ?? false);
 
-  const handleDisconnected = useCallback(() => {
-    console.log("[W3-Meet] Disconnected from room");
-    setDisconnected(true);
+  const handleDisconnected = useCallback((reason?: DisconnectReason) => {
+    console.log("[W3-Meet] Disconnected, reason:", reason);
+    // Only show "Call ended" if user intentionally left
+    if (intentionalLeave.current || reason === DisconnectReason.CLIENT_INITIATED) {
+      setUserLeft(true);
+    }
+    // For other reasons (network, server restart, etc.) LiveKit will auto-reconnect
   }, []);
 
-  const handleError = useCallback((err: Error) => {
-    console.error("[W3-Meet] LiveKit error:", err);
+  const handleLeave = useCallback(() => {
+    intentionalLeave.current = true;
   }, []);
 
   function copyInviteLink() {
@@ -79,7 +121,7 @@ export function RoomPage() {
     );
   }
 
-  if (disconnected) {
+  if (userLeft) {
     return (
       <div style={{
         display: "flex", flexDirection: "column", alignItems: "center",
@@ -90,7 +132,7 @@ export function RoomPage() {
           color: "var(--text-hi)",
         }}>Call ended</span>
         <div style={{ display: "flex", gap: 12 }}>
-          <button className="primary" onClick={() => setDisconnected(false)}>
+          <button className="primary" onClick={() => { intentionalLeave.current = false; setUserLeft(false); }}>
             Rejoin
           </button>
           <button onClick={() => navigate("/")}>
@@ -110,8 +152,9 @@ export function RoomPage() {
       serverUrl={connection.serverUrl}
       token={connection.token}
       connect={true}
+      options={roomOptions}
       onDisconnected={handleDisconnected}
-      onError={handleError}
+      onError={(err) => console.error("[W3-Meet] LiveKit error:", err)}
       style={{ height: "100vh", display: "flex", flexDirection: "column", background: "var(--bg-void)" }}
     >
       <div style={{ flex: 1, display: "flex", overflow: "hidden", position: "relative" }}>
@@ -124,8 +167,7 @@ export function RoomPage() {
           flexDirection: "column",
           overflow: "hidden",
         }}>
-          {/* Invite link button */}
-          <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-subtle)" }}>
+          <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-subtle)", flexShrink: 0 }}>
             <button
               onClick={copyInviteLink}
               style={{
@@ -152,6 +194,7 @@ export function RoomPage() {
 
         {/* Center: video grid */}
         <div style={{ flex: 1, position: "relative", background: "var(--bg-void)" }}>
+          <ConnectionStatus />
           <RecordingIndicator active={recording} />
           <VideoGrid />
         </div>
@@ -172,7 +215,15 @@ export function RoomPage() {
         )}
       </div>
 
-      <ControlBar isHost={connection.isHost} activePanel={activePanel} onPanelToggle={handlePanelToggle} recording={recording} onRecordToggle={toggleRecording} recordingLoading={recLoading} />
+      <ControlBar
+        isHost={connection.isHost}
+        activePanel={activePanel}
+        onPanelToggle={handlePanelToggle}
+        recording={recording}
+        onRecordToggle={toggleRecording}
+        recordingLoading={recLoading}
+        onLeave={handleLeave}
+      />
       <RoomAudioRenderer />
     </LiveKitRoom>
   );
