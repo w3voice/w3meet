@@ -10,6 +10,7 @@ import { ParticipantList } from "../components/room/ParticipantList";
 import { RecordingIndicator } from "../components/room/RecordingIndicator";
 import { ChatPanel } from "../components/room/ChatPanel";
 import { WhiteboardPanel } from "../components/whiteboard/WhiteboardPanel";
+import { DocsPanel } from "../components/docs/DocsPanel";
 
 export function RoomPage() {
   const { roomId } = useParams<{ roomId: string }>();
@@ -100,7 +101,7 @@ export function RoomPage() {
             boxShadow: "-4px 0 20px rgba(0,0,0,0.3)",
           }}>
             {activePanel === "whiteboard" && <WhiteboardPanel roomId={roomId!} username={name} />}
-            {activePanel === "docs" && <div style={{ padding: 16, fontFamily: "var(--font-mono)", fontSize: 13, color: "var(--text-lo)" }}>Docs — loading...</div>}
+            {activePanel === "docs" && <DocsPanel roomId={roomId!} username={name} />}
             {activePanel === "code" && <div style={{ padding: 16, fontFamily: "var(--font-mono)", fontSize: 13, color: "var(--text-lo)" }}>Code — loading...</div>}
           </div>
         )}
