@@ -3,10 +3,12 @@ import { LiveKitRoom, RoomAudioRenderer } from "@livekit/components-react";
 import "@livekit/components-styles";
 import { useState } from "react";
 import { useRoom } from "../hooks/useRoom";
+import { useRecording } from "../hooks/useRecording";
 import { VideoGrid } from "../components/room/VideoGrid";
 import { ControlBar } from "../components/room/ControlBar";
 import { ParticipantList } from "../components/room/ParticipantList";
 import { RecordingIndicator } from "../components/room/RecordingIndicator";
+import { ChatPanel } from "../components/room/ChatPanel";
 
 export function RoomPage() {
   const { roomId } = useParams<{ roomId: string }>();
@@ -16,6 +18,7 @@ export function RoomPage() {
   const hostKey = searchParams.get("host_key") || undefined;
   const { connection, error, loading } = useRoom(roomId!, name, hostKey);
   const [activePanel, setActivePanel] = useState<string | null>(null);
+  const { recording, toggleRecording, loading: recLoading } = useRecording(roomId!, connection?.isHost ?? false);
 
   if (loading) {
     return (
@@ -77,12 +80,12 @@ export function RoomPage() {
           flexDirection: "column",
         }}>
           <ParticipantList />
-          {/* ChatPanel goes here in Task 11 */}
+          <ChatPanel />
         </div>
 
         {/* Center: video grid */}
         <div style={{ flex: 1, position: "relative", background: "var(--bg-void)" }}>
-          <RecordingIndicator active={false} />
+          <RecordingIndicator active={recording} />
           <VideoGrid />
         </div>
 
@@ -102,7 +105,7 @@ export function RoomPage() {
         )}
       </div>
 
-      <ControlBar isHost={connection.isHost} activePanel={activePanel} onPanelToggle={handlePanelToggle} />
+      <ControlBar isHost={connection.isHost} activePanel={activePanel} onPanelToggle={handlePanelToggle} recording={recording} onRecordToggle={toggleRecording} recordingLoading={recLoading} />
       <RoomAudioRenderer />
     </LiveKitRoom>
   );

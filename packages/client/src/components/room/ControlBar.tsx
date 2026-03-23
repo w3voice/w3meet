@@ -8,9 +8,12 @@ interface ControlBarProps {
   isHost: boolean;
   activePanel: string | null;
   onPanelToggle: (panel: string) => void;
+  recording: boolean;
+  onRecordToggle: () => void;
+  recordingLoading: boolean;
 }
 
-export function ControlBar({ isHost, activePanel, onPanelToggle }: ControlBarProps) {
+export function ControlBar({ isHost, activePanel, onPanelToggle, recording, onRecordToggle, recordingLoading }: ControlBarProps) {
   return (
     <div style={{
       display: "flex",
@@ -24,6 +27,25 @@ export function ControlBar({ isHost, activePanel, onPanelToggle }: ControlBarPro
       <TrackToggle source={Track.Source.Microphone} />
       <TrackToggle source={Track.Source.Camera} />
       <TrackToggle source={Track.Source.ScreenShare} />
+
+      {isHost && (
+        <button
+          onClick={onRecordToggle}
+          disabled={recordingLoading}
+          style={{
+            background: recording ? "var(--danger-dim)" : "var(--bg-elevated)",
+            color: recording ? "var(--danger)" : "var(--text-mid)",
+            borderColor: recording ? "rgba(239,68,68,0.25)" : "var(--border-subtle)",
+            padding: "8px 16px",
+            fontSize: 12,
+            fontFamily: "var(--font-mono)",
+            textTransform: "uppercase" as const,
+            letterSpacing: "0.06em",
+          }}
+        >
+          {recording ? "Stop Rec" : "Record"}
+        </button>
+      )}
 
       <div style={{ width: 1, height: 24, background: "var(--border-subtle)", margin: "0 10px" }} />
 
