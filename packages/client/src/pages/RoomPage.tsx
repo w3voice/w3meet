@@ -117,7 +117,7 @@ export function RoomPage() {
       <div style={{ flex: 1, display: "flex", overflow: "hidden", position: "relative" }}>
         {/* Left sidebar */}
         <div style={{
-          width: 220,
+          width: 264,
           borderRight: "1px solid var(--border-subtle)",
           background: "var(--bg-surface)",
           display: "flex",
