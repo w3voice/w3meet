@@ -14,7 +14,8 @@ import { createRateLimiter } from "./middleware/rate-limit.js";
 import { RATE_LIMIT_ROOMS_PER_HOUR, RATE_LIMIT_API_PER_MINUTE } from "@w3-meet/shared";
 
 const app = express();
-app.use(cors({ origin: config.corsOrigin }));
+app.set("trust proxy", true);
+app.use(cors({ origin: true }));
 app.use(express.json({ limit: "10mb" }));
 
 const roomService = new RoomService(redis);
