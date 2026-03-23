@@ -16,6 +16,11 @@ export default defineConfig({
         ws: true,
       },
       "/pad": "http://localhost:3030",
+      "/lk": {
+        target: "ws://localhost:7880",
+        ws: true,
+        rewrite: (path) => path.replace(/^\/lk/, ""),
+      },
     },
   },
 });
