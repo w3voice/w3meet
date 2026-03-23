@@ -9,10 +9,13 @@ export function HomePage() {
   async function handleCreate() {
     setLoading(true);
     try {
+      console.log("[W3-Meet] Creating room...");
       const { id, hostKey } = await createRoom();
+      console.log("[W3-Meet] Room created:", id, "navigating...");
       navigate(`/room/${id}?host_key=${hostKey}`);
-    } catch (err) {
-      alert("Failed to create room");
+    } catch (err: any) {
+      console.error("[W3-Meet] Room creation failed:", err);
+      alert("Failed to create room: " + err.message);
     } finally {
       setLoading(false);
     }
