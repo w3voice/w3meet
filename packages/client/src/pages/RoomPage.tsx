@@ -1,7 +1,7 @@
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { LiveKitRoom, RoomAudioRenderer } from "@livekit/components-react";
 import "@livekit/components-styles";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useRoom } from "../hooks/useRoom";
 import { useRecording } from "../hooks/useRecording";
 import { VideoGrid } from "../components/room/VideoGrid";
@@ -21,7 +21,26 @@ export function RoomPage() {
   const hostKey = searchParams.get("host_key") || undefined;
   const { connection, error, loading } = useRoom(roomId!, name, hostKey);
   const [activePanel, setActivePanel] = useState<string | null>(null);
+  const [disconnected, setDisconnected] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const { recording, toggleRecording, loading: recLoading } = useRecording(roomId!, connection?.isHost ?? false);
+
+  const handleDisconnected = useCallback(() => {
+    console.log("[W3-Meet] Disconnected from room");
+    setDisconnected(true);
+  }, []);
+
+  const handleError = useCallback((err: Error) => {
+    console.error("[W3-Meet] LiveKit error:", err);
+  }, []);
+
+  function copyInviteLink() {
+    const link = `${window.location.origin}/room/${roomId}`;
+    navigator.clipboard.writeText(link).then(() => {
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    });
+  }
 
   if (loading) {
     return (
@@ -60,6 +79,28 @@ export function RoomPage() {
     );
   }
 
+  if (disconnected) {
+    return (
+      <div style={{
+        display: "flex", flexDirection: "column", alignItems: "center",
+        justifyContent: "center", minHeight: "100vh", gap: 20,
+      }}>
+        <span style={{
+          fontFamily: "var(--font-mono)", fontSize: 15,
+          color: "var(--text-hi)",
+        }}>Call ended</span>
+        <div style={{ display: "flex", gap: 12 }}>
+          <button className="primary" onClick={() => setDisconnected(false)}>
+            Rejoin
+          </button>
+          <button onClick={() => navigate("/")}>
+            Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   function handlePanelToggle(panel: string) {
     setActivePanel((prev) => (prev === panel ? null : panel));
   }
@@ -69,7 +110,8 @@ export function RoomPage() {
       serverUrl={connection.serverUrl}
       token={connection.token}
       connect={true}
-      onDisconnected={() => navigate("/")}
+      onDisconnected={handleDisconnected}
+      onError={handleError}
       style={{ height: "100vh", display: "flex", flexDirection: "column", background: "var(--bg-void)" }}
     >
       <div style={{ flex: 1, display: "flex", overflow: "hidden", position: "relative" }}>
@@ -82,6 +124,28 @@ export function RoomPage() {
           display: "flex",
           flexDirection: "column",
         }}>
+          {/* Invite link button */}
+          <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-subtle)" }}>
+            <button
+              onClick={copyInviteLink}
+              style={{
+                width: "100%",
+                padding: "8px 12px",
+                fontSize: 11,
+                fontFamily: "var(--font-mono)",
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+                background: linkCopied ? "var(--success-dim)" : "var(--accent-signal-dim)",
+                color: linkCopied ? "var(--success)" : "var(--accent-signal)",
+                border: `1px solid ${linkCopied ? "rgba(34,197,94,0.25)" : "rgba(34,211,238,0.25)"}`,
+                borderRadius: "var(--radius-sm)",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+            >
+              {linkCopied ? "Link copied!" : "Copy invite link"}
+            </button>
+          </div>
           <ParticipantList />
           <ChatPanel />
         </div>
