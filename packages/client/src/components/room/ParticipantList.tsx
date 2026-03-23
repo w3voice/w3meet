@@ -4,7 +4,7 @@ export function ParticipantList() {
   const participants = useParticipants();
 
   return (
-    <div style={{ padding: 16 }}>
+    <div style={{ padding: 16, flex: 1, overflowY: "auto", minHeight: 0 }}>
       <h3 style={{
         fontSize: 11,
         fontFamily: "var(--font-mono)",

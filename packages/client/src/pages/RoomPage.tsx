@@ -120,9 +120,9 @@ export function RoomPage() {
           width: 220,
           borderRight: "1px solid var(--border-subtle)",
           background: "var(--bg-surface)",
-          overflowY: "auto",
           display: "flex",
           flexDirection: "column",
+          overflow: "hidden",
         }}>
           {/* Invite link button */}
           <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-subtle)" }}>
