@@ -1,0 +1,38 @@
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.server
+    ports:
+      - "3001:3001"
+    environment:
+      LIVEKIT_API_KEY: devkey
+      LIVEKIT_API_SECRET: devsecret
+      LIVEKIT_URL: ws://livekit:7880
+      REDIS_URL: redis://redis:6379
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: "9000"
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET_RECORDINGS: recordings
+      MINIO_BUCKET_ARTIFACTS: artifacts
+      PORT: "3001"
+      CORS_ORIGIN: http://localhost:5173
+      TURN_SECRET: turnsecret
+    depends_on:
+      - livekit
+      - redis
+      - minio
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.dev.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - backend
+      - livekit
+      - rustpad
+    restart: unless-stopped
