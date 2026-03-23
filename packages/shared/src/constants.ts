@@ -1,0 +1,11 @@
+export const ROOM_ID_LENGTH = 10;
+export const HOST_KEY_LENGTH = 20;
+export const MAX_PARTICIPANTS = 30;
+export const ROOM_IDLE_TIMEOUT_MS = 15 * 60 * 1000;
+export const TOKEN_TTL_SECONDS = 4 * 60 * 60;
+export const TURN_CREDENTIAL_TTL_SECONDS = 6 * 60 * 60;
+export const YJS_SNAPSHOT_INTERVAL_MS = 30 * 1000;
+export const RECORDING_DOWNLOAD_TTL_SECONDS = 7 * 24 * 60 * 60;
+export const MAX_CONCURRENT_RECORDINGS = 2;
+export const RATE_LIMIT_ROOMS_PER_HOUR = 10;
+export const RATE_LIMIT_API_PER_MINUTE = 100;
