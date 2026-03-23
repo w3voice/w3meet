@@ -46,7 +46,7 @@ export function ParticipantList() {
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
-              }}>{p.identity}</span>
+              }}>{p.identity || p.name || "Anonymous"}</span>
               {meta.isHost && (
                 <span style={{
                   fontSize: 9,

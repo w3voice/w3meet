@@ -20,6 +20,7 @@ export function ChatPanel() {
     <div style={{
       flex: 1, display: "flex", flexDirection: "column",
       borderTop: "1px solid var(--border-subtle)",
+      minHeight: 0, maxHeight: "50%",
     }}>
       <h3 style={{
         fontSize: 11, fontFamily: "var(--font-mono)", color: "var(--text-lo)",
