@@ -17,11 +17,13 @@ export function useRoom(roomId: string, name: string, hostKey?: string) {
     async function connect() {
       try {
         const res = await getToken(roomId, name, hostKey);
+        // In dev, connect directly to LiveKit server; in prod, go through nginx
+        const livekitUrl = import.meta.env.VITE_LIVEKIT_URL || "ws://localhost:7880";
         setConnection({
           token: res.token,
           isHost: res.isHost,
           iceServers: res.iceServers,
-          serverUrl: `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}/rtc`,
+          serverUrl: livekitUrl,
         });
       } catch (err: any) {
         setError(err.message);
