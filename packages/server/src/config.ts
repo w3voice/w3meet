@@ -12,6 +12,7 @@ export const config = {
     apiKey: required("LIVEKIT_API_KEY"),
     apiSecret: required("LIVEKIT_API_SECRET"),
     url: required("LIVEKIT_URL"),
+    publicUrl: process.env.LIVEKIT_PUBLIC_URL || process.env.LIVEKIT_URL || "ws://localhost:7880",
   },
 
   redis: {

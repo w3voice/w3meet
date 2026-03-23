@@ -48,6 +48,7 @@ export async function generateToken(
   return {
     token: await token.toJwt(),
     isHost,
+    livekitUrl: config.livekit.publicUrl,
     iceServers,
   };
 }

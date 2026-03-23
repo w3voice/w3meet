@@ -16,6 +16,7 @@ export interface TokenRequest {
 export interface TokenResponse {
   token: string;
   isHost: boolean;
+  livekitUrl: string;
   iceServers: IceServer[];
 }
 
